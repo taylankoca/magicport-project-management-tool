@@ -8,13 +8,21 @@ use Illuminate\Http\Request;
 class TaskController extends Controller
 {
     /**
-     * Display a listing of the tasks.
+     * Display a listing of the tasks for a specific project.
      *
+     * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\JsonResponse
      */
-    public function index()
+    public function index(Request $request)
     {
-        $tasks = Task::all();
+        // Validate that a project_id is provided
+        $validatedData = $request->validate([
+            'project_id' => 'required|exists:projects,id',
+        ]);
+
+        // Fetch tasks related to the specific project
+        $tasks = Task::where('project_id', $validatedData['project_id'])->get();
+
         return response()->json($tasks, 200);
     }
 
