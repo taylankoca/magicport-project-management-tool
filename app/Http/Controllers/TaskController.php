@@ -2,11 +2,18 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Task;
 use Illuminate\Http\Request;
+use App\Repositories\TaskRepositoryInterface;
 
 class TaskController extends Controller
 {
+    protected $taskRepo;
+
+    public function __construct(TaskRepositoryInterface $taskRepo)
+    {
+        $this->taskRepo = $taskRepo;
+    }
+
     /**
      * Display a listing of the tasks for a specific project.
      *
@@ -20,8 +27,8 @@ class TaskController extends Controller
             'project_id' => 'required|exists:projects,id',
         ]);
 
-        // Fetch tasks related to the specific project
-        $tasks = Task::where('project_id', $validatedData['project_id'])->get();
+        // Use repository to fetch tasks related to the specific project
+        $tasks = $this->taskRepo->getTasksByProjectId($validatedData['project_id']);
 
         return response()->json($tasks, 200);
     }
@@ -41,7 +48,7 @@ class TaskController extends Controller
             'status' => 'required|in:todo,in-progress,done',
         ]);
 
-        $task = Task::create($validatedData);
+        $task = $this->taskRepo->createTask($validatedData);
         return response()->json($task, 201);
     }
 
@@ -53,7 +60,7 @@ class TaskController extends Controller
      */
     public function show($id)
     {
-        $task = Task::find($id);
+        $task = $this->taskRepo->getTaskById($id);
 
         if (!$task) {
             return response()->json(['message' => 'Task not found'], 404);
@@ -71,15 +78,13 @@ class TaskController extends Controller
      */
     public function update(Request $request, $id)
     {
-        $task = Task::findOrFail($id);
-
         $validatedData = $request->validate([
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
             'status' => 'required|in:todo,in-progress,done',
         ]);
 
-        $task->update($validatedData);
+        $task = $this->taskRepo->updateTask($id, $validatedData);
         return response()->json($task, 200);
     }
 
@@ -91,9 +96,7 @@ class TaskController extends Controller
      */
     public function destroy($id)
     {
-        $task = Task::findOrFail($id);
-        $task->delete();
-
+        $this->taskRepo->deleteTask($id);
         return response()->json(null, 204);
     }
 }

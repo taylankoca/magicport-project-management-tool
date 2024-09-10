@@ -2,11 +2,18 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Project;
 use Illuminate\Http\Request;
+use App\Repositories\ProjectRepositoryInterface;
 
 class ProjectController extends Controller
 {
+    protected $projectRepo;
+
+    public function __construct(ProjectRepositoryInterface $projectRepo)
+    {
+        $this->projectRepo = $projectRepo;
+    }
+
     /**
      * Display a listing of the projects.
      *
@@ -14,7 +21,7 @@ class ProjectController extends Controller
      */
     public function index()
     {
-        $projects = Project::all();
+        $projects = $this->projectRepo->getAllProjects();
         return response()->json($projects, 200);
     }
 
@@ -31,7 +38,7 @@ class ProjectController extends Controller
             'description' => 'nullable|string',
         ]);
 
-        $project = Project::create($validatedData);
+        $project = $this->projectRepo->createProject($validatedData);
         return response()->json($project, 201);
     }
 
@@ -43,7 +50,7 @@ class ProjectController extends Controller
      */
     public function show($id)
     {
-        $project = Project::with('tasks')->find($id);
+        $project = $this->projectRepo->getProjectById($id);
 
         if (!$project) {
             return response()->json(['message' => 'Project not found'], 404);
@@ -61,14 +68,12 @@ class ProjectController extends Controller
      */
     public function update(Request $request, $id)
     {
-        $project = Project::findOrFail($id);
-
         $validatedData = $request->validate([
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
         ]);
 
-        $project->update($validatedData);
+        $project = $this->projectRepo->updateProject($id, $validatedData);
         return response()->json($project, 200);
     }
 
@@ -80,9 +85,7 @@ class ProjectController extends Controller
      */
     public function destroy($id)
     {
-        $project = Project::findOrFail($id);
-        $project->delete();
-
+        $this->projectRepo->deleteProject($id);
         return response()->json(null, 204);
     }
 }
