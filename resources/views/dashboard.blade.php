@@ -9,6 +9,7 @@
 </head>
 <body>
 <div class="container mt-5">
+
     <h1>Project Dashboard</h1>
 
     <!-- Login Form -->
@@ -31,6 +32,11 @@
     <!-- Projects Section -->
     <div id="projects-section" class="mt-4" style="display: none;">
         <h3>Your Projects</h3>
+
+        <!-- Explanation for Project Search -->
+        <p>Use the search box below to quickly find a project by typing its name:</p>
+
+        <input type="text" class="form-control mb-3" id="search-projects" placeholder="Search Projects...">
         <button class="btn btn-success mb-3" id="create-project-btn">Create New Project</button>
         <button class="btn btn-danger mb-3 float-end" id="logout-btn">Logout</button> <!-- Logout Button -->
         <ul id="projects-list" class="list-group mb-4">
@@ -38,16 +44,31 @@
         </ul>
     </div>
 
+
     <!-- Project Details Section -->
     <div id="project-details-section" class="mt-4" style="display: none;">
         <h3>Project Tasks</h3>
         <button class="btn btn-secondary mb-3" id="back-to-projects-btn">Back to Projects</button>
         <h4>Tasks for Project: <span id="project-name"></span></h4>
+
+        <!-- Explanation for Task Search and Status Filter -->
+        <p>Search for a task by name or filter tasks based on their current status:</p>
+
+        <!-- Task Search and Filter -->
+        <input type="text" class="form-control mb-3" id="search-tasks" placeholder="Search Tasks...">
+        <select class="form-select mb-3" id="task-status-filter">
+            <option value="all">All</option>
+            <option value="todo">Todo</option>
+            <option value="in-progress">In Progress</option>
+            <option value="done">Done</option>
+        </select>
+
         <button class="btn btn-success mb-3" id="create-task-btn">Add New Task</button>
         <ul id="tasks-list" class="list-group">
             <!-- Tasks will be listed here -->
         </ul>
     </div>
+
 </div>
 
 <!-- Modal for Updating Project -->
@@ -238,7 +259,7 @@
             });
     });
 
-    // Function to fetch all projects
+    // Function to fetch all projects and filter by search term
     function fetchProjects() {
         axios.get('/api/projects', {
             headers: {
@@ -247,20 +268,24 @@
         })
             .then(function (response) {
                 const projectsList = document.getElementById('projects-list');
+                const searchValue = document.getElementById('search-projects').value.toLowerCase();
                 projectsList.innerHTML = ''; // Clear existing projects
-                response.data.forEach(function (project) {
-                    const li = document.createElement('li');
-                    li.classList.add('list-group-item');
-                    li.innerHTML = `
+
+                response.data
+                    .filter(project => project.name.toLowerCase().includes(searchValue)) // Filter by search term
+                    .forEach(function (project) {
+                        const li = document.createElement('li');
+                        li.classList.add('list-group-item');
+                        li.innerHTML = `
                 <span><strong>${project.name}</strong> <small>${project.description}</small></span>
                 <div class="float-end">
                     <button class="btn btn-info btn-sm me-2" onclick="viewProjectDetails(${project.id}, '${project.name}')">View</button>
                     <button class="btn btn-warning btn-sm me-2" onclick="openUpdateProjectModal(${project.id}, '${project.name}', '${project.description}')">Update</button>
                     <button class="btn btn-danger btn-sm" onclick="openDeleteModal(${project.id}, 'project')">Delete</button>
                 </div>
-            `;
-                    projectsList.appendChild(li);
-                });
+                `;
+                        projectsList.appendChild(li);
+                    });
             })
             .catch(function (error) {
                 console.error('Failed to fetch projects:', error);
@@ -390,7 +415,7 @@
         fetchTasks(); // Fetch tasks for the selected project
     }
 
-    // Function to fetch tasks for the current project
+    // Function to fetch tasks for the current project and filter by search term and status
     function fetchTasks() {
         axios.get(`/api/tasks?project_id=${currentProjectId}`, {
             headers: {
@@ -399,31 +424,37 @@
         })
             .then(function (response) {
                 const tasksList = document.getElementById('tasks-list');
+                const searchValue = document.getElementById('search-tasks').value.toLowerCase();
+                const statusFilter = document.getElementById('task-status-filter').value;
+
                 tasksList.innerHTML = ''; // Clear existing tasks
 
-                response.data.forEach(function (task) {
-                    // Determine the badge class based on the task status
-                    let badgeClass = '';
+                response.data
+                    .filter(task => task.name.toLowerCase().includes(searchValue)) // Filter by search term
+                    .filter(task => statusFilter === 'all' || task.status === statusFilter) // Filter by status
+                    .forEach(function (task) {
+                        // Determine the badge class based on the task status
+                        let badgeClass = '';
 
-                    if (task.status === 'todo') {
-                        badgeClass = 'badge bg-warning'; // For 'todo' status
-                    } else if (task.status === 'in-progress') {
-                        badgeClass = 'badge bg-danger'; // For 'in-progress' status
-                    } else if (task.status === 'done') {
-                        badgeClass = 'badge bg-success'; // For 'done' status
-                    }
+                        if (task.status === 'todo') {
+                            badgeClass = 'badge bg-warning'; // For 'todo' status
+                        } else if (task.status === 'in-progress') {
+                            badgeClass = 'badge bg-danger'; // For 'in-progress' status
+                        } else if (task.status === 'done') {
+                            badgeClass = 'badge bg-success'; // For 'done' status
+                        }
 
-                    const li = document.createElement('li');
-                    li.classList.add('list-group-item');
-                    li.innerHTML = `
+                        const li = document.createElement('li');
+                        li.classList.add('list-group-item');
+                        li.innerHTML = `
                 <span><strong>${task.name}</strong> <small>${task.description}</small> - <span class="${badgeClass}">${task.status}</span></span>
                 <div class="float-end">
                     <button class="btn btn-warning btn-sm me-2" onclick="openUpdateTaskModal(${task.id}, '${task.name}', '${task.description}', '${task.status}')">Update</button>
                     <button class="btn btn-danger btn-sm" onclick="openDeleteModal(${task.id}, 'task')">Delete</button>
                 </div>
-            `;
-                    tasksList.appendChild(li);
-                });
+                `;
+                        tasksList.appendChild(li);
+                    });
             })
             .catch(function (error) {
                 console.error('Failed to fetch tasks:', error);
@@ -522,6 +553,10 @@
                 console.error('Failed to logout:', error);
             });
     });
+
+    document.getElementById('search-projects').addEventListener('input', fetchProjects);
+    document.getElementById('search-tasks').addEventListener('input', fetchTasks);
+    document.getElementById('task-status-filter').addEventListener('change', fetchTasks);
 
 </script>
 
