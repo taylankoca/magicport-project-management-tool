@@ -4,6 +4,7 @@
 namespace App\Repositories;
 
 use App\Models\Task;
+use App\Events\TaskUpdated;
 
 class TaskRepository implements TaskRepositoryInterface
 {
@@ -20,11 +21,13 @@ class TaskRepository implements TaskRepositoryInterface
 
     public function deleteTask($taskId)
     {
+        event(new TaskUpdated($task));
         return Task::destroy($taskId);
     }
 
     public function createTask(array $data)
     {
+        event(new TaskUpdated($task));
         return Task::create($data);
     }
 
@@ -32,6 +35,9 @@ class TaskRepository implements TaskRepositoryInterface
     {
         $task = Task::find($taskId);
         $task->update($data);
+
+        event(new TaskUpdated($task));
+
         return $task;
     }
 }

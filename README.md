@@ -61,6 +61,8 @@ cp .env.example .env
 ```
 Update the `.env` file with your local environment configurations (e.g., database connection).
 
+For pusher you don't have to touch initial settings.
+
 #### 4. Generate Application Key
 Generate an application key by running the following command:
 ```bash

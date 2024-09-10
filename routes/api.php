@@ -6,6 +6,7 @@ use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\TaskController;
 use App\Http\Controllers\LoginController;
 
+
 // Public routes
 Route::post('/login', [LoginController::class, 'login']);
 

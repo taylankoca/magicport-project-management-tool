@@ -6,6 +6,8 @@
     <title>Project Dashboard</title>
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+
+
 </head>
 <body>
 <div class="container mt-5">
@@ -578,6 +580,28 @@
     document.getElementById('task-status-filter').addEventListener('change', fetchTasks);
 
 </script>
+<script src="https://js.pusher.com/8.2.0/pusher.min.js"></script>
+<script>
 
+    // Enable pusher logging - don't include this in production
+    Pusher.logToConsole = true;
+
+    var pusher = new Pusher('861947775b4e7722fe6b', {
+        cluster: 'eu',
+        encrypted: true,
+    });
+
+    // Subscribe to the 'projects' channel for real-time updates
+    const projectChannel = pusher.subscribe('projects');
+    projectChannel.bind('update', function(data) {
+        fetchProjects(); // Fetch updated projects when a project is updated
+    });
+
+    // Subscribe to the 'tasks' channel for real-time updates
+    const taskChannel = pusher.subscribe('tasks');
+    taskChannel.bind('update', function(data) {
+        fetchTasks(); // Fetch updated tasks when a task is updated
+    });
+</script>
 </body>
 </html>

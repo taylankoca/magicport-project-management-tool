@@ -1,13 +1,12 @@
 <?php
 
+use App\Models\Project;
+use App\Events\ProjectUpdated;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use Pusher\Pusher;
 
 // Dashboard Page (List all projects)
 Route::get('/', function () {
     return view('dashboard');
-});
-
-// Project Detail Page (Show tasks for a specific project)
-Route::get('/projects/{project}', function ($project) {
-    return view('project-detail', ['projectId' => $project]);
 });
