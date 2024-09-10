@@ -20,6 +20,15 @@ class UserSeeder extends Seeder
             'name' => 'John Doe',
             'email' => 'john.doe@example.com',
             'password' => Hash::make('password123'), // Use Hash to securely store the password
+            'role' => 'user', // Use Hash to securely store the password
+        ]);
+
+        // Create a user with specific credentials
+        User::create([
+            'name' => 'Admin Doe',
+            'email' => 'admin@example.com',
+            'password' => Hash::make('admin123'), // Use Hash to securely store the password
+            'role' => 'admin', // Use Hash to securely store the password
         ]);
     }
 }

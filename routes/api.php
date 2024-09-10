@@ -20,7 +20,13 @@ Route::middleware('auth:sanctum')->group(function () {
         return $request->user();
     });
 
-    // Resource routes for projects and tasks
-    Route::apiResource('projects', ProjectController::class);
-    Route::apiResource('tasks', TaskController::class);
+    // Resource routes for projects and tasks (GET, POST, PUT, PATCH)
+    Route::apiResource('projects', ProjectController::class)->except(['destroy']);
+    Route::apiResource('tasks', TaskController::class)->except(['destroy']);
+
+    // Restrict delete operations to admin users only
+    Route::middleware(['role:admin'])->group(function () {
+        Route::delete('projects/{project}', [ProjectController::class, 'destroy']);
+        Route::delete('tasks/{task}', [TaskController::class, 'destroy']);
+    });
 });

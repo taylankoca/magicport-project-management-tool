@@ -42,6 +42,7 @@
         <ul id="projects-list" class="list-group mb-4">
             <!-- Projects will be listed here -->
         </ul>
+        <div id="error-message-1" class="alert alert-danger" style="display: none;"></div>
     </div>
 
 
@@ -67,6 +68,7 @@
         <ul id="tasks-list" class="list-group">
             <!-- Tasks will be listed here -->
         </ul>
+        <div id="error-message-2" class="alert alert-danger" style="display: none;"></div>
     </div>
 
 </div>
@@ -240,6 +242,10 @@
         const email = document.getElementById('email').value;
         const password = document.getElementById('password').value;
 
+        // Hide any error messages on login attempt
+        document.getElementById('error-message-1').style.display = 'none';
+        document.getElementById('error-message-2').style.display = 'none';
+
         axios.post('/api/login', {
             email: email,
             password: password
@@ -379,8 +385,10 @@
 
         if (deleteType === 'project') {
             deleteUrl = `/api/projects/${deleteId}`; // Delete project endpoint
+            var errorMessage = document.getElementById('error-message-1');
         } else if (deleteType === 'task') {
             deleteUrl = `/api/tasks/${deleteId}`; // Delete task endpoint
+            var errorMessage = document.getElementById('error-message-2');
         }
 
         axios.delete(deleteUrl, {
@@ -399,11 +407,22 @@
                 } else if (deleteType === 'task') {
                     fetchTasks();
                 }
+
+                // Hide the error message after successful deletion
+                errorMessage.style.display = 'none';
             })
             .catch(function(error) {
-                console.error('Failed to delete:', error);
+                if (error.response && error.response.status === 403) {
+                    errorMessage.textContent = 'Unauthorized. Admins only.';
+                    errorMessage.style.display = 'block';
+                } else {
+                    errorMessage.textContent = 'An error occurred while trying to delete.';
+                    errorMessage.style.display = 'block';
+                    console.error('Failed to delete:', error);
+                }
             });
     });
+
 
     // Function to view project details and list tasks
     function viewProjectDetails(projectId, projectName) {
