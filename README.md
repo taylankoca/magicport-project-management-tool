@@ -78,7 +78,9 @@ Optionally, you can also seed the database with test data (if seeds are availabl
 php artisan db:seed
 ```
 
-In this step you should set default email and password for basic user. You can create more than one user.
+In this step you should set default email and password for sample users. You can create more than one user.
+
+Check the file `database/seeders/UserSeeder.php`
 ```php
     public function run()
     {
@@ -87,9 +89,17 @@ In this step you should set default email and password for basic user. You can c
             'name' => 'John Doe',
             'email' => 'john.doe@example.com',
             'password' => Hash::make('password123'), // Use Hash to securely store the password
+            'role' => 'user', // Use Hash to securely store the password
+        ]);
+
+        // Create a user with specific credentials
+        User::create([
+            'name' => 'Admin Doe',
+            'email' => 'admin@example.com',
+            'password' => Hash::make('admin123'), // Use Hash to securely store the password
+            'role' => 'admin', // Use Hash to securely store the password
         ]);
     }
-}
 ```
 
 #### 6. Compile Assets
