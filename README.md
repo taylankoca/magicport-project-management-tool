@@ -121,3 +121,4 @@ Now the project will be accessible at `http://127.0.0.1:8000`.
 ### Usage
 - After logging in, you will be directed to the projects dashboard where you can create, update, view, and delete projects.
 - You can manage tasks within each project and assign them different statuses.
+- Only admins can delete projects.
